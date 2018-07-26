@@ -15,7 +15,7 @@ X_train /= 255.
 X_test = X_test.astype('float32')
 X_test /= 255.
 
-#reshape input data
+#reshape input data to be convolution friendly, fourth column is the channel
 X_train = X_train.reshape(X_train.shape[0], config.img_width, config.img_height, 1)
 X_test = X_test.reshape(X_test.shape[0], config.img_width, config.img_height, 1)
 
@@ -27,13 +27,28 @@ labels=range(10)
 
 # build model
 model = Sequential()
-model.add(Conv2D(32,
+model.add(Conv2D(16,
     (config.first_layer_conv_width, config.first_layer_conv_height),
     input_shape=(28, 28,1),
     activation='relu'))
+# output is 24x24x32
 model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.5))
+
+#config has kernel size at 3x3
+# you can take a out the input_shape in the second call
+model.add(Conv2D(16,
+    (config.first_layer_conv_width, config.first_layer_conv_height),
+    activation='relu'))
+# output is 26x26x32
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.5))
+
+# output is 13x13x32
 model.add(Flatten())
+
 model.add(Dense(config.dense_layer_size, activation='relu'))
+
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='adam',
